@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Signup</title>
+    <!-- Bootstrap CSS -->
+    <link
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      /* Center align the form */
+      .container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div>
+        <style>
+          h3 {
+            color: blue;
+          }
+        </style>
+        {%for message in messages%}
+        <h3>{{message}}</h3>
+        {%endfor%}
+      </div>
+      <form class="col-md-6" action="" method="POST">
+        {% csrf_token %}
+        <!-- Replace "/signup/" with the actual URL where the form data should be submitted -->
+        <h2 class="mb-3">Signup</h2>
+        <div class="form-group">
+          <label for="username">Username</label>
+          <input
+            type="text"
+            name="username"
+            class="form-control"
+            id="username"
+            placeholder="Enter username"
+          />
+        </div>
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input
+            type="password"
+            name="password"
+            class="form-control"
+            id="password"
+            placeholder="Enter password"
+          />
+        </div>
+        <div class="form-group">
+          <label for="confirmPassword">Confirm Password</label>
+          <input
+            type="password"
+            name="confirmPassword"
+            class="form-control"
+            id="confirmPassword"
+            placeholder="Confirm password"
+          />
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">Signup</button>
+      </form>
+      <div>
+        <h6>
+          PASSWORD SHOULD BE OF MIN 8 CHARACTERS, INCLUDING 1 NUMBER AND 1
+          SPECIAL CHARACTER
+        </h6>
+      </div>
+      <div class="mt-3">
+        <a href="{% url 'signin' %}" class="btn btn-link btn-block"
+          >Already a user? Sign in here</a
+        >
+      </div>
+    </div>
+
+    <!-- Bootstrap JS (optional, for Bootstrap components that require JS) -->
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  </body>
+</html>
