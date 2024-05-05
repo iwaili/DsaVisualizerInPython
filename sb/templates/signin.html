@@ -1,3 +1,4 @@
+{%load static%}
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -17,14 +18,47 @@
         align-items: center;
         height: 100vh;
       }
+      body {
+        /* Set background image */
+        background-image: url('{% static "images/signin.jpg" %}');
+        /* Adjust background image properties */
+        background-size: cover;
+        background-repeat: no-repeat;
+        background-position: center;
+        /* Set default font for the body */
+        font-family: Arial, sans-serif; /* Change the font family as needed */
+      }
     </style>
   </head>
   <body>
+    <nav
+      class="navbar navbar-expand-lg navbar-light"
+      style="background-color: rgba(255, 255, 255, 0.2)"
+    >
+      <a
+        class="navbar-brand"
+        style="
+          font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+        "
+        href="{% url 'index' %}"
+        >Home</a
+      >
+    </nav>
     <div class="container">
+      <div>
+        <style>
+          h3 {
+            color: blue;
+          }
+        </style>
+        {%for message in messages%}
+        <h3>{{message}}</h3>
+        {%endfor%}
+      </div>
       <form class="col-md-6" action="" method="POST">
         {% csrf_token %}
         <!-- Replace "/signin/" with the actual URL where the form data should be submitted -->
-        <h2 class="mb-3">Login</h2>
+        <h2 class="mb-3">Sign In</h2>
         <div class="form-group">
           <label for="username">Username</label>
           <input
@@ -42,10 +76,18 @@
             name="password"
             class="form-control"
             id="password"
-            placeholder="Enter password"
+            placeholder="********"
           />
         </div>
-        <button type="submit" class="btn btn-primary">Login</button>
+        <div>
+          <button type="submit" class="btn btn-primary">Login</button>
+          <a
+            href="{% url 'signup' %}"
+            class="btn btn-link btn-block"
+            style="color: black"
+            ><h4>Make a new account</h4></a
+          >
+        </div>
       </form>
     </div>
 

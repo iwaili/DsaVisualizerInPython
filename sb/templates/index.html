@@ -14,18 +14,21 @@
     <style>
       /* Background image */
       body {
-        background-image: url('{% static "images/back.png" %}');
+        background-image: url('{% static "images/b2.jpg" %}');
         background-size: cover;
         background-repeat: no-repeat;
         height: 100vh;
+        filter: grayscale(100%); /* Convert background to black and white */
       }
       /* Navbar */
       .navbar {
-        background-color: rgba(0, 0, 0, 0.7); /* semi-transparent black */
+        font-family: Cambria, Cochin, Georgia, Times, "Times New Roman", serif;
+        font-size: x-large;
+        background-color: rgba(255, 255, 255, 0.7); /* semi-transparent white */
       }
       .navbar-brand,
       .navbar-nav .nav-link {
-        color: white;
+        color: black; /* Set text color to black */
       }
       /* Button styles */
       .button-container {
@@ -45,26 +48,36 @@
       }
       /* Primary button */
       .btn-primary {
-        background-color: #007bff;
-        color: #fff;
+        background-color: black;
+        color: aqua;
       }
       /* Secondary button */
       .btn-secondary {
-        background-color: #6c757d;
-        color: #fff;
+        background-color: black;
+        color: white;
       }
       /* Tertiary button */
       .btn-tertiary {
-        background-color: #28a745;
-        color: #fff;
+        background-color: black;
+        color: white;
       }
     </style>
   </head>
   <body>
     <!-- Navigation Bar -->
-    <nav class="navbar navbar-expand-lg navbar-dark">
+    <nav
+      class="navbar navbar-expand-lg navbar-dark"
+      style="background-color: rgba(255, 255, 255, 0.2)"
+    >
       <div class="container">
-        <a class="navbar-brand" href="#">Minor Project</a>
+        <a
+          class="navbar-brand"
+          style="font-size: x-large; color: black"
+          href="https://en.wikipedia.org/wiki/List_of_algorithms"
+          target="_blank"
+          >Graphiti</a
+        >
+
         <button
           class="navbar-toggler"
           type="button"
@@ -79,25 +92,24 @@
         <div class="collapse navbar-collapse" id="navbarNav">
           <ul class="navbar-nav ml-auto">
             <li class="nav-item">
-              <a class="nav-link" href="#">Home</a>
+              <a class="nav-link" style="color: black" href="{% url 'signin' %}"
+                >Sign In</a
+              >
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="#">About</a>
+              <a class="nav-link" style="color: black" href="{% url 'about' %}"
+                >About</a
+              >
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="#">Contact</a>
+              <a class="nav-link" style="color: black" href="{% url 'signup' %}"
+                >Sign Up</a
+              >
             </li>
           </ul>
         </div>
       </div>
     </nav>
-
-    <!-- Button Container -->
-    <div class="button-container">
-      <button href="basictemp.html" class="btn btn-primary">nodes</button>
-      <button class="btn btn-secondary">tree</button>
-      <button class="btn btn-tertiary">grid</button>
-    </div>
 
     <!-- Bootstrap JS and dependencies -->
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>

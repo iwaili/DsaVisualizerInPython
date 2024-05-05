@@ -9,6 +9,8 @@ class Profile(models.Model):
     
     def __str__(self):
         return self.user.username
+
+
 # Create your models here.
 #if we make any changes here we need it to migrate it by writing python manage.py makemigrations
 '''
