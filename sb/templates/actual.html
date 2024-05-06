@@ -3,9 +3,96 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Hey</title>
+    <title>Web Development Timeline</title>
+    <!-- Bootstrap CSS -->
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+    />
+    <!-- Custom CSS -->
+    <style>
+      .timeline {
+        position: relative;
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+      .timeline-item {
+        padding: 20px;
+        margin-bottom: 20px;
+        background: #f0f0f0;
+        border-radius: 5px;
+      }
+      .timeline-item h3 {
+        margin-top: 0;
+      }
+      .timeline-item p {
+        margin-bottom: 0;
+      }
+    </style>
   </head>
   <body>
-    <p>Hey</p>
+    <div class="container">
+      <div class="row">
+        <div class="col-md-12">
+          <h1 class="text-center">Web Development Timeline</h1>
+          <div class="timeline">
+            <div class="timeline-item">
+              <h3>1991: The Birth of the Web</h3>
+              <p>
+                Tim Berners-Lee invents the World Wide Web while working at
+                CERN.
+              </p>
+            </div>
+            <div class="timeline-item">
+              <h3>1995: The Rise of Dynamic Websites</h3>
+              <p>
+                JavaScript is introduced, enabling dynamic client-side
+                functionality.
+              </p>
+            </div>
+            <div class="timeline-item">
+              <h3>1999: CSS Revolution</h3>
+              <p>
+                Cascading Style Sheets (CSS) gain widespread adoption,
+                separating style from content.
+              </p>
+            </div>
+            <div class="timeline-item">
+              <h3>2004: The Emergence of Web 2.0</h3>
+              <p>
+                Websites become more interactive and user-focused with the rise
+                of social media and AJAX.
+              </p>
+            </div>
+            <div class="timeline-item">
+              <h3>2010: The Mobile Era</h3>
+              <p>
+                Responsive web design becomes essential as mobile usage
+                skyrockets.
+              </p>
+            </div>
+            <div class="timeline-item">
+              <h3>2015: Rise of Frontend Frameworks</h3>
+              <p>
+                Frameworks like AngularJS, React, and Vue.js simplify frontend
+                development.
+              </p>
+            </div>
+            <div class="timeline-item">
+              <h3>2020: Full Stack Development</h3>
+              <p>
+                Developers increasingly focus on mastering both frontend and
+                backend technologies.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bootstrap JS and jQuery -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
   </body>
 </html>
