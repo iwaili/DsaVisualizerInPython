@@ -1,12 +1,12 @@
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.contrib import messages
+from django.contrib.auth import authenticate,login,logout
 from django.contrib.auth.models import User, auth
 from django.contrib.auth.decorators import login_required
 from .models import Profile
 import re 
 
-@login_required(login_url='signin')
 def index(request):
     return render(request,'index.html')
 
@@ -58,7 +58,7 @@ def signin(request):
 
         if user is not None:
             auth.login(request,user)
-            return render(request,'actual.html')
+            return render(request,'index.html')
         else:
             messages.info(request,'Credentials are Incorrect')
             return redirect('signin')
@@ -68,7 +68,12 @@ def signin(request):
 @login_required(login_url='signin')
 def logout(request):
     auth.logout(request)
+    messages.success(request,'You were logged out')
     return redirect('signin')
 
 def about(request):
     return render(request,'about.html')
+
+@login_required(login_url='signin')
+def actual(request):
+    return render(request,'actual.html')
