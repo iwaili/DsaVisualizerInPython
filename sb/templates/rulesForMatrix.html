@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Rules</title>
+    <style>
+      /* Center the content vertically and horizontally */
+      body,
+      html {
+        height: 100%;
+        margin: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      /* Style for the centered div */
+      .centered-div {
+        text-align: center;
+      }
+
+      /* Style for the button */
+      .redirect-button {
+        padding: 10px 20px;
+        font-size: 16px;
+        background-color: #007bff;
+        color: #fff;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+      }
+
+      /* Hover effect for the button */
+      .redirect-button:hover {
+        background-color: #0056b3;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="centered-div">
+      <h1>Welcome to Our Project</h1>
+      <p>Some introductory text about your project goes here...</p>
+      <button class="redirect-button" onclick="redirectToPage()">
+        Go back
+      </button>
+    </div>
+
+    <script>
+      function redirectToPage() {
+        // Redirect to the desired page in your project
+        window.location.href = "{% url 'actual' %}";
+      }
+    </script>
+  </body>
+</html>

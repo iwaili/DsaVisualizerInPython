@@ -13,4 +13,5 @@ urlpatterns = [
     path('actual',views.actual,name='actual'), 
     path('actual/process/', views.process_data, name='process_data'),
     path('show/<str:username>/<int:requestno>/', views.show, name='show'),
+    path('actual/rulesForMatrix',views.rulesForMatrix,name='rulesForMatrix'),
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

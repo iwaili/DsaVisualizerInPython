@@ -1,10 +1,10 @@
-{%load static%}
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Write the adjacency matrix</title>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Input</title>
     <style>
       body {
         background-image: url("{% static 'images/formBack.jpg' %}");
@@ -12,12 +12,15 @@
         margin: 0;
         padding: 0;
         background-color: #f4f4f4;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
       }
 
       .container {
-        width: 90%;
-        max-width: 600px;
-        margin: 50px auto;
+        width: 95%; /* Increase width to cover more of the window */
+        max-width: 800px; /* Limit maximum width */
         background-color: #fff;
         padding: 20px;
         border-radius: 10px;
@@ -46,7 +49,7 @@
         box-sizing: border-box;
         display: block;
         resize: vertical;
-        min-height: 100px;
+        min-height: 200px; /* Increased height */
       }
 
       .button-container {
@@ -72,22 +75,35 @@
         background-color: #0056b3;
       }
 
+      .rules-button-container {
+        text-align: center;
+      }
+
       @media screen and (max-width: 768px) {
         .container {
-          width: 80%;
+          width: 90%;
         }
       }
 
       @media screen and (max-width: 480px) {
         .container {
-          width: 90%;
+          width: 95%;
         }
       }
     </style>
   </head>
   <body>
     <div class="container">
-      <h2>Form with Buttons</h2>
+      <div>
+        <button class="btn btn-primary" onclick="redirectToPage()">Home</button>
+
+        <script>
+          function redirectToPage() {
+            href = "{% url 'index' %}";
+          }
+        </script>
+      </div>
+      <h2>Please Enter Adjacency Matrix</h2>
       <form
         action="{% url 'process_data' %}"
         method="post"
@@ -96,15 +112,83 @@
         {% csrf_token %}
         <textarea name="text_input" placeholder="Enter text..."></textarea>
         <div class="button-container">
-          <button type="submit" name="button" value="Button 1">BFS</button>
-          <button type="submit" name="button" value="Button 2">DFS</button>
-          <button type="submit" name="button" value="Button 3">Kruskal</button>
-          <button type="submit" name="button" value="Button 4">Kruskal</button>
-          <button type="submit" name="button" value="Button 5">
+          <button
+            type="submit"
+            name="button"
+            value="Button 1"
+            style="background-color: #2e92de; color: #fff"
+          >
+            BFS
+          </button>
+          <button
+            type="submit"
+            name="button"
+            value="Button 2"
+            style="background-color: #2e92de; color: #fff"
+          >
+            DFS
+          </button>
+          <button
+            type="submit"
+            name="button"
+            value="Button 3"
+            style="background-color: #2e92de; color: #fff"
+          >
+            Kruskal
+          </button>
+          <button
+            type="submit"
+            name="button"
+            value="Button 4"
+            style="background-color: #2e92de; color: #fff"
+          >
+            Graph Coloring
+          </button>
+          <button
+            type="submit"
+            name="button"
+            value="Button 5"
+            style="background-color: #2e92de; color: #fff"
+          >
+            Prims
+          </button>
+          <button
+            type="submit"
+            name="button"
+            value="Button 6"
+            style="background-color: #2e92de; color: #fff"
+          >
             Cycle Detection
           </button>
+          <div class="button-container">
+            <button
+              type="submit"
+              name="button"
+              value="Button 7"
+              style="background-color: #2e92de; color: #fff"
+            >
+               No of Forests
+            </button>
         </div>
       </form>
-    </div>
-  </body>
+      <div class="rules-button-container">
+        <button
+          class="btn btn-primary"
+          style="background-color: #ff0000; color: #fff"
+          onclick="redirectToPage()"
+        >
+          Some Rules to Write the Adjacency Matrix
+        </button>
+
+        <script>
+          function redirectToPage() {
+            window.location.href = "{% url 'rulesForMatrix' %}";
+          }
+        </script>
+{%for message in messages%}
+<h3>{{message}}</h3>
+{%endfor%}
+</div>
+</div>
+</body>
 </html>

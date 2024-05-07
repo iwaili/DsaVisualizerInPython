@@ -15,10 +15,12 @@ from django.contrib.auth.decorators import login_required
 from .models import Profile
 from .models import SavedGraph
 
+@login_required(login_url='signin')
+def rulesForMatrix(request):
+   return render(request,'rulesForMatrix.html')
 
 def index(request):
     return render(request,'index.html')
-
 def signup(request):
     if request.method == 'POST':
         username = request.POST['username']
@@ -468,11 +470,13 @@ def generate_adjacency_matrix(matrix):
     adj_matrix = np.array(rows, dtype=int)
     return adj_matrix
 
-
 def process_data(request):
     if request.method == 'POST':
         text_input = request.POST.get('text_input')
         file_input = request.FILES.get('file_input')
+        if not text_input:
+          messages.info(request, '')
+          return redirect('actual')
         selected_button = request.POST.get('button')
         
         # Process the text and file data as needed
