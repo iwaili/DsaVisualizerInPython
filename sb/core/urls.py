@@ -1,3 +1,5 @@
+from django.conf import settings
+from django.conf.urls.static import static
 from django.urls import path
 from . import views
 urlpatterns = [
@@ -9,5 +11,6 @@ urlpatterns = [
     path('signin/about',views.about,name='about'),
     path('logout',views.logout,name='logout'),
     path('actual',views.actual,name='actual'), 
-    path('actual/process/', views.process_data, name='process_data'),   
-]
+    path('actual/process/', views.process_data, name='process_data'),
+    path('show/<str:username>/<int:requestno>/', views.show, name='show'),
+]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

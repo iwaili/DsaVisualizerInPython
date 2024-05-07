@@ -1,0 +1,29 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Show Graphs</title>
+    <style>
+      .graph-container {
+        margin-top: 20px;
+      }
+      .graph {
+        max-width: 300px; /* Set a fixed width */
+        border: 1px solid #ccc;
+        margin-bottom: 20px; /* Add margin bottom for spacing */
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Graphs for User: {{ username }} (Request No: {{ requestno }})</h1>
+    <div class="graph-container">
+      {% for filename in filenames %}
+      <div class="graph">
+        <img src="/media/graphs/{{ filename }}" alt="Graph" />
+      </div>
+      {% endfor %}
+    </div>
+  </body>
+</html>

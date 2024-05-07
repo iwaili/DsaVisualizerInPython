@@ -28,7 +28,16 @@ class userData(models.Model):
     input = models.TextField
     which = models.TextField
     date = models.DateField
-    
+
+class SavedGraph(models.Model):
+    username = models.CharField(max_length=100)
+    requestno = models.CharField(max_length=100)
+    ab = models.CharField(max_length=100)
+    image = models.ImageField(upload_to='graphs/')
+
+    def __str__(self):
+        return f"{self.username}_{self.requestno}_{self.ab}"
+
 # Create your models here.
 #if we make any changes here we need it to migrate it by writing python manage.py makemigrations
 '''

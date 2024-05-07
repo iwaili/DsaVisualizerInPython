@@ -1,3 +1,11 @@
+import io
+import numpy as np
+import networkx as nx
+import matplotlib.pyplot as plt
+from django.conf import settings 
+import re 
+from django.http import FileResponse
+import os
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.contrib import messages
@@ -5,70 +13,56 @@ from django.contrib.auth import authenticate,login,logout
 from django.contrib.auth.models import User, auth
 from django.contrib.auth.decorators import login_required
 from .models import Profile
-import io
-import numpy as np
-import networkx as nx
-import matplotlib.pyplot as plt
-import re 
-from django.http import FileResponse
-import os
-import datetime
+from .models import SavedGraph
+
 
 def index(request):
-    if request.user.is_authenticated:
-        user_profile = Profile.objects.get(user=request.user)
-        return render(request, 'index.html', {'user_profile': user_profile})
-    else:
-        return render(request, 'index.html')
-    
-from django.shortcuts import render, redirect
-from django.contrib import messages
-from django.contrib.auth.models import User
-from .models import Profile
-import re
+    return render(request,'index.html')
 
 def signup(request):
     if request.method == 'POST':
         username = request.POST['username']
         password = request.POST['password']
         confirmpassword = request.POST['confirmPassword']
-        profileimg = request.FILES.get('image')  # Access image from request.FILES
+
         if password == confirmpassword:
             if User.objects.filter(username=username).exists():
-                messages.info(request, 'Username already taken')
+                messages.info(request,'Username already taken')
                 return redirect('signup')
             else:
-                check = 0
+                check=0
                 if len(password) < 8:
-                    check = 1
+                    check=1
                 # Check if password contains at least one digit
                 elif not re.search(r'\d', password):
-                    check = 1
+                    check=1
                 # Check if password contains at least one special character
                 elif not re.search(r'[!@#$%^&*()-_+=]', password):
-                    check = 1
-                if check == 1:
-                    messages.info(request, 'Password is not strong enough ')
+                    check=1
+                if check==1:
+                    messages.info(request,'Password is not strong enough ')
                     return redirect('signup')
                 else:
-                    user = User.objects.create_user(username=username, password=password)
-                    user.save()
-                    new_profile = Profile.objects.create(user=user, id_user=user.id, profileimg=profileimg)
-                    messages.info(request, 'Signup Complete')
+                    user = User.objects.create_user(username=username,password=password)
+                    user.save( )
+                    user_model = User.objects.get(username = username)#profile belongs to which user
+                    new_profile = Profile.objects.create(user=user_model,id_user=user_model.id)
+                    new_profile.save()
+                    messages.info(request,'Signup Complete')
                     return redirect('signin')
+                
 
         else:
-            messages.info(request, 'Passwords not matching')
+            messages.info(request,'Passwords not matching')
             return redirect('signup')
-    else:
-        return render(request, 'signup.html')
-
+    else: 
+        return render(request,'signup.html')
 
 def signin(request):
     if request.method == 'POST':
         username = request.POST['username']
         password = request.POST['password']
-        
+
         user = auth.authenticate(username = username,password = password)
 
         if user is not None:
@@ -292,7 +286,6 @@ def makeInitialInfo(adjacency_matrix):
       y_center = (y_values[0] + y_values[1]) / 2
       plt.text(x_center, y_center," ", ha='center', va='bottom')
   plt.axis('off')
-  plt.show()
   tempEdgeInfo=[]
   noOfEdges=0
   for i in range(len(adjacency_matrix)):
@@ -357,8 +350,7 @@ info = {
   sphere color :
 }
 '''
-def drawGraph(info,username):
-  xvi=0
+def drawGraph(info,username,requestno,ab):
   tempInt=0
   for i, vertex in enumerate(info['CoOrdinatesOfVertices']):
     plt.scatter(vertex[0], vertex[1], s=100, color='red')
@@ -389,21 +381,40 @@ def drawGraph(info,username):
     plt.text(x_center, y_center," ", color='blue', ha='center', va='bottom')
     tempInt=tempInt+1
     '''
+  filename = f"{username}_{requestno}_{ab}.png"
+
+# Define the file path where the image will be saved
+  filepath = os.path.join(settings.MEDIA_ROOT, 'graphs', filename)
+
+  # Turn off axis
   plt.axis('off')
-  # Retrieve the username (assuming you have a logged-in user)
-        
-        # Generate the current date
-  current_date = datetime.datetime.now().strftime("%Y-%m-%d")
-        
-        # Construct a unique filename
-  filename = f"{username}_{current_date}"
-  addXV()
-  plt.savefig(filename)
+
+  # Save the figure
+  plt.savefig(filepath)
   print(f"Saved graph as {filename}")
-  plt.show()
+
+  # Clear the current figure
+  plt.clf()  # Clear the current figure to release memory
+
+  # Create an instance of the SavedGraph model and save it to the database
+  saved_graph = SavedGraph.objects.create(
+      username=username,
+      requestno=requestno,
+      ab=ab,
+      image=f'graphs/{filename}'
+  )
   return filename
 
-def kruskal(matrix,username):
+'''{'CoOrdinatesOfVertices': [(93, 53), (193, 82), (7, 60), (182, 16), (0, 0), (83, 28)],
+ 'verticeNames': ['A', 'B', 'C', 'D', 'E', 'F'],
+ 'edges': [{0, 1}, {0, 2}, {0, 3}, {0, 5}, {1, 3}, {2, 4}, {3, 5}, {4, 5}],
+ 'edgeColor': {'(0,1)': 'blue', '(0,2)': 'blue', '(0,3)': 'blue', '(0,5)': 'blue',
+ '(1,3)': 'blue', '(2,4)': 'blue', '(3,5)': 'blue', '(4,5)': 'blue'},
+ 'sphereColor': {'(0,1)': 'blue', '(0,2)': 'blue', '(0,3)': 'blue', '(0,5)': 'blue', '(1,3)': 'blue', '(2,4)': 'blue', '(3,5)': 'blue', '(4,5)': 'blue'},
+ 'textOnEdge': ['temp', 'temp', 'temp', 'temp', 'temp', 'temp', 'temp', 'temp'],
+ 'toShowEdgeOrNot': ['1', '1', '1', '1', '1', '1', '1', '1']}'''
+def kruskal(matrix,username,requestno):
+    ab=0
     graphs=[]
     list_of_all_nodes_we_can_visit_from_this_node = []
     for i in range(len(matrix)):
@@ -443,8 +454,10 @@ def kruskal(matrix,username):
         if isCycle == 0:
             info['edgeColor'][key] = 'green'
             allVisited = allVisited + 1
-        graphs.append(drawGraph(info,username))
+        graphs.append(drawGraph(info,username,requestno,ab))
+        ab+=1
     print(disOfEdges)
+    print(graphs)
     return graphs
   #drawGraph(info)
 
@@ -464,21 +477,27 @@ def process_data(request):
         
         # Process the text and file data as needed
         if text_input:
-            adj_matrix = generate_adjacency_matrix(text_input)
-            print(adj_matrix)
-            print("Text Input:", text_input)
-            username = request.user.username
-            profile = Profile.objects.get(user=request.user)
-            requestno = profile.num()
-            return HttpResponse(f'Text input: {username}, Selected button: {requestno}')
-            graphs = kruskal(adj_matrix,username)
-            Profile.incnum()
-            
+          adj_matrix = generate_adjacency_matrix(text_input)
+          print(adj_matrix)
+          print("Text Input:", text_input)
+          username = request.user.username
+          profile = Profile.objects.get(user=request.user)
+          profile.incnum()
+          requestno = profile.num()
+          graphs = kruskal(adj_matrix,username,requestno)
+          print(graphs)
+          profile.incnum()
+          profile.save()
+          return redirect('show', username=username, requestno=requestno)
         
         if file_input:
             print("File Input:", file_input.name)
         
-        return HttpResponse(f'Text input: {adj_matrix}, Selected button: {selected_button}')
+        return render(request, 'actual.html')
     else:
         return HttpResponse('Invalid request method')
-
+    
+def show(request, username, requestno):
+    media_path = os.path.join(settings.MEDIA_ROOT, 'graphs')
+    filenames = [filename for filename in os.listdir(media_path) if filename.startswith(f"{username}_{requestno}_")]
+    return render(request, 'show.html', {'username': username, 'requestno': requestno, 'filenames': filenames})
