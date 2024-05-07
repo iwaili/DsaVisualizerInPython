@@ -1,3 +1,11 @@
+import io
+import numpy as np
+import networkx as nx
+import matplotlib.pyplot as plt
+from django.conf import settings 
+import re 
+from django.http import FileResponse
+import os
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.contrib import messages
@@ -5,13 +13,7 @@ from django.contrib.auth import authenticate,login,logout
 from django.contrib.auth.models import User, auth
 from django.contrib.auth.decorators import login_required
 from .models import Profile
-import io
-import numpy as np
-import networkx as nx
-import matplotlib.pyplot as plt
-import re 
-from django.http import FileResponse
-import os
+from .models import SavedGraph
 
 
 def index(request):
@@ -284,7 +286,6 @@ def makeInitialInfo(adjacency_matrix):
       y_center = (y_values[0] + y_values[1]) / 2
       plt.text(x_center, y_center," ", ha='center', va='bottom')
   plt.axis('off')
-  plt.show()
   tempEdgeInfo=[]
   noOfEdges=0
   for i in range(len(adjacency_matrix)):
@@ -349,8 +350,7 @@ info = {
   sphere color :
 }
 '''
-def drawGraph(info):
-  xvi=0
+def drawGraph(info,username,requestno,ab):
   tempInt=0
   for i, vertex in enumerate(info['CoOrdinatesOfVertices']):
     plt.scatter(vertex[0], vertex[1], s=100, color='red')
@@ -381,13 +381,28 @@ def drawGraph(info):
     plt.text(x_center, y_center," ", color='blue', ha='center', va='bottom')
     tempInt=tempInt+1
     '''
+  filename = f"{username}_{requestno}_{ab}.png"
+
+# Define the file path where the image will be saved
+  filepath = os.path.join(settings.MEDIA_ROOT, 'graphs', filename)
+
+  # Turn off axis
   plt.axis('off')
-  filename = f"graph_{xv}.png"
-  
-  addXV()
-  plt.savefig(filename)
+
+  # Save the figure
+  plt.savefig(filepath)
   print(f"Saved graph as {filename}")
-  plt.show()
+
+  # Clear the current figure
+  plt.clf()  # Clear the current figure to release memory
+
+  # Create an instance of the SavedGraph model and save it to the database
+  saved_graph = SavedGraph.objects.create(
+      username=username,
+      requestno=requestno,
+      ab=ab,
+      image=f'graphs/{filename}'
+  )
   return filename
 
 '''{'CoOrdinatesOfVertices': [(93, 53), (193, 82), (7, 60), (182, 16), (0, 0), (83, 28)],
@@ -398,7 +413,8 @@ def drawGraph(info):
  'sphereColor': {'(0,1)': 'blue', '(0,2)': 'blue', '(0,3)': 'blue', '(0,5)': 'blue', '(1,3)': 'blue', '(2,4)': 'blue', '(3,5)': 'blue', '(4,5)': 'blue'},
  'textOnEdge': ['temp', 'temp', 'temp', 'temp', 'temp', 'temp', 'temp', 'temp'],
  'toShowEdgeOrNot': ['1', '1', '1', '1', '1', '1', '1', '1']}'''
-def kruskal(matrix):
+def kruskal(matrix,username,requestno):
+    ab=0
     graphs=[]
     list_of_all_nodes_we_can_visit_from_this_node = []
     for i in range(len(matrix)):
@@ -438,8 +454,10 @@ def kruskal(matrix):
         if isCycle == 0:
             info['edgeColor'][key] = 'green'
             allVisited = allVisited + 1
-        graphs.append(drawGraph(info))
+        graphs.append(drawGraph(info,username,requestno,ab))
+        ab+=1
     print(disOfEdges)
+    print(graphs)
     return graphs
   #drawGraph(info)
 
@@ -459,16 +477,27 @@ def process_data(request):
         
         # Process the text and file data as needed
         if text_input:
-            adj_matrix = generate_adjacency_matrix(text_input)
-            print(adj_matrix)
-            print("Text Input:", text_input)
-            graphs = kruskal(adj_matrix)
-            return render(request, 'graphs.html', {'generated_graphs': graphs[2]})
+          adj_matrix = generate_adjacency_matrix(text_input)
+          print(adj_matrix)
+          print("Text Input:", text_input)
+          username = request.user.username
+          profile = Profile.objects.get(user=request.user)
+          profile.incnum()
+          requestno = profile.num()
+          graphs = kruskal(adj_matrix,username,requestno)
+          print(graphs)
+          profile.incnum()
+          profile.save()
+          return redirect('show', username=username, requestno=requestno)
         
         if file_input:
             print("File Input:", file_input.name)
         
-        return HttpResponse(f'Text input: {adj_matrix}, Selected button: {selected_button}')
+        return render(request, 'actual.html')
     else:
         return HttpResponse('Invalid request method')
-
+    
+def show(request, username, requestno):
+    media_path = os.path.join(settings.MEDIA_ROOT, 'graphs')
+    filenames = [filename for filename in os.listdir(media_path) if filename.startswith(f"{username}_{requestno}_")]
+    return render(request, 'show.html', {'username': username, 'requestno': requestno, 'filenames': filenames})
