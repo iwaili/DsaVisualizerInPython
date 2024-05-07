@@ -301,7 +301,7 @@ def makeInitialInfo(adjacency_matrix):
   for i in tempEdgeInfo:
     j=list(i)
     tempEdgeInfo1 = f'({j[0]},{j[1]})'
-    tempEdgeColor[tempEdgeInfo1]="blue"
+    tempEdgeColor[tempEdgeInfo1]="darkslategrey"
     tempTextOnEdge[tempEdgeInfo1] = 'None'
     TempToShowEdgeOrNot[tempEdgeInfo1] = '1'
   tempSphereColor = {}
@@ -352,60 +352,58 @@ info = {
   sphere color :
 }
 '''
-def drawGraph(info,username,requestno,ab):
-  tempInt=0
-  for i, vertex in enumerate(info['CoOrdinatesOfVertices']):
-    plt.scatter(vertex[0], vertex[1], s=100, color='red')
-    plt.text(vertex[0], vertex[1], info['verticeNames'][tempInt], fontsize=14, color='black', ha='center', va='bottom')
-    tempInt=tempInt+1
-  tempInt=0
-  for edge1 in info['edges']:
-    edge = list(edge1)
-    print(tempInt)
-    x_values = [info['CoOrdinatesOfVertices'][edge[0]][0], info['CoOrdinatesOfVertices'][edge[1]][0]]
-    y_values = [info['CoOrdinatesOfVertices'][edge[0]][1], info['CoOrdinatesOfVertices'][edge[1]][1]]
-    tempEdgeInfo1 = f'({edge[0]},{edge[1]})'
-    plt.plot(x_values, y_values, color = info['edgeColor'][tempEdgeInfo1], marker=None)
-    x_center = (x_values[0] + x_values[1]) / 2
-    y_center = (y_values[0] + y_values[1]) / 2
-    plt.text(x_center, y_center," ", color='blue', ha='center', va='bottom')
-    tempInt=tempInt+1
-    '''
-  for edge1, color in zip(info['edges'], info['edgeColor']):
-    edge = list(edge1)
-    print(tempInt)
-    x_values = [info['CoOrdinatesOfVertices'][edge[0]][0], info['CoOrdinatesOfVertices'][edge[1]][0]]
-    y_values = [info['CoOrdinatesOfVertices'][edge[0]][1], info['CoOrdinatesOfVertices'][edge[1]][1]]
-    tempEdgeInfo1 = f'({edge[0]},{edge[1]})'
-    plt.plot(x_values, y_values, color = info['edgeColor'][tempEdgeInfo1], marker=None)
-    x_center = (x_values[0] + x_values[1]) / 2
-    y_center = (y_values[0] + y_values[1]) / 2
-    plt.text(x_center, y_center," ", color='blue', ha='center', va='bottom')
-    tempInt=tempInt+1
-    '''
-  filename = f"{username}_{requestno}_{ab}.png"
+import os
+import matplotlib.pyplot as plt
+from django.conf import settings
+from .models import SavedGraph
 
-# Define the file path where the image will be saved
-  filepath = os.path.join(settings.MEDIA_ROOT, 'graphs', filename)
+def drawGraph(info, username, requestno, ab):
+    tempInt = 0
+    plt.figure(facecolor='black')  # Set background color to black
+    for i, vertex in enumerate(info['CoOrdinatesOfVertices']):
+        plt.scatter(vertex[0], vertex[1], s=100, color='yellow')
+        plt.text(vertex[0], vertex[1], info['verticeNames'][tempInt], fontsize=14, color='black', ha='center', va='bottom')
+        tempInt += 1
 
-  # Turn off axis
-  plt.axis('off')
+    tempInt = -1
+    for edge1 in info['edges']:
+        tempInt += 1
+        edge = list(edge1)
+        print(tempInt)
+        x_values = [info['CoOrdinatesOfVertices'][edge[0]][0], info['CoOrdinatesOfVertices'][edge[1]][0]]
+        y_values = [info['CoOrdinatesOfVertices'][edge[0]][1], info['CoOrdinatesOfVertices'][edge[1]][1]]
+        tempEdgeInfo1 = f'({edge[0]},{edge[1]})'
+        plt.plot(x_values, y_values, color=info['edgeColor'][tempEdgeInfo1], marker=None)
+        x_center = (x_values[0] + x_values[1]) / 2
+        y_center = (y_values[0] + y_values[1]) / 2
+        if info['edgeColor'][tempEdgeInfo1]=='blue':
+           plt.text(x_center, y_center, info['textOnEdge'][tempInt], color='red', ha='center', va='bottom')
+        else:
+           plt.text(x_center, y_center, info['textOnEdge'][tempInt], color='olive', ha='center', va='bottom')
 
-  # Save the figure
-  plt.savefig(filepath)
-  print(f"Saved graph as {filename}")
+    filename = f"{username}_{requestno}_{ab}.png"
 
-  # Clear the current figure
-  plt.clf()  # Clear the current figure to release memory
+    # Define the file path where the image will be saved
+    filepath = os.path.join(settings.MEDIA_ROOT, 'graphs', filename)
 
-  # Create an instance of the SavedGraph model and save it to the database
-  saved_graph = SavedGraph.objects.create(
-      username=username,
-      requestno=requestno,
-      ab=ab,
-      image=f'graphs/{filename}'
-  )
-  return filename
+    # Turn off axis
+    plt.axis('off')
+
+    # Save the figure
+    plt.savefig(filepath)
+
+    # Clear the current figure
+    plt.clf()  # Clear the current figure to release memory
+
+    # Create an instance of the SavedGraph model and save it to the database
+    saved_graph = SavedGraph.objects.create(
+        username=username,
+        requestno=requestno,
+        ab=ab,
+        image=f'graphs/{filename}'
+    )
+    return filename
+
 
 '''{'CoOrdinatesOfVertices': [(93, 53), (193, 82), (7, 60), (182, 16), (0, 0), (83, 28)],
  'verticeNames': ['A', 'B', 'C', 'D', 'E', 'F'],
@@ -415,6 +413,7 @@ def drawGraph(info,username,requestno,ab):
  'sphereColor': {'(0,1)': 'blue', '(0,2)': 'blue', '(0,3)': 'blue', '(0,5)': 'blue', '(1,3)': 'blue', '(2,4)': 'blue', '(3,5)': 'blue', '(4,5)': 'blue'},
  'textOnEdge': ['temp', 'temp', 'temp', 'temp', 'temp', 'temp', 'temp', 'temp'],
  'toShowEdgeOrNot': ['1', '1', '1', '1', '1', '1', '1', '1']}'''
+
 def kruskal(matrix,username,requestno):
     ab=0
     graphs=[]
@@ -423,8 +422,11 @@ def kruskal(matrix,username,requestno):
         list_of_all_nodes_we_can_visit_from_this_node.append([])
     print(list_of_all_nodes_we_can_visit_from_this_node)
     info = makeInitialInfo(matrix)
+    print(info)
     disOfEdges = {}
+    tempInt=-1
     for edge1 in info['edges']:
+        tempInt+=1
         edge = list(edge1)
         x_values = [info['CoOrdinatesOfVertices'][edge[0]][0], info['CoOrdinatesOfVertices'][edge[1]][0]]
         y_values = [info['CoOrdinatesOfVertices'][edge[0]][1], info['CoOrdinatesOfVertices'][edge[1]][1]]
@@ -433,14 +435,17 @@ def kruskal(matrix,username,requestno):
             distance = int(np.sqrt(distance_squared))
             tempEdgeInfo = f'({edge[0]},{edge[1]})'
             disOfEdges[tempEdgeInfo] = distance
+            info['textOnEdge'][tempInt] = str(distance)
         else:
             print(f"Skipping edge {edge}: distance calculation resulted in a negative value.")
+    print("--------",info)
     tempDisOfEdges = disOfEdges
     disOfEdges = dict(sorted(tempDisOfEdges.items(), key=lambda item: item[1]))
     allVisited = 0
     for key, value in disOfEdges.items():
         print(allVisited)
         if allVisited == len(info['verticeNames']) - 1:
+            
             print('tree is complete')
             break
         print(list_of_all_nodes_we_can_visit_from_this_node)
@@ -454,14 +459,13 @@ def kruskal(matrix,username,requestno):
                 break
         print(disOfEdges)
         if isCycle == 0:
-            info['edgeColor'][key] = 'green'
+            info['edgeColor'][key] = 'blue'
             allVisited = allVisited + 1
         graphs.append(drawGraph(info,username,requestno,ab))
         ab+=1
     print(disOfEdges)
     print(graphs)
     return graphs
-  #drawGraph(info)
 
 def generate_adjacency_matrix(matrix):
     # Split the text input by lines and then split each line by whitespace to get the individual elements
