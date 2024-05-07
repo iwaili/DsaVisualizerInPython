@@ -12,55 +12,63 @@ import matplotlib.pyplot as plt
 import re 
 from django.http import FileResponse
 import os
-
+import datetime
 
 def index(request):
-    return render(request,'index.html')
+    if request.user.is_authenticated:
+        user_profile = Profile.objects.get(user=request.user)
+        return render(request, 'index.html', {'user_profile': user_profile})
+    else:
+        return render(request, 'index.html')
+    
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from django.contrib.auth.models import User
+from .models import Profile
+import re
 
 def signup(request):
     if request.method == 'POST':
         username = request.POST['username']
         password = request.POST['password']
         confirmpassword = request.POST['confirmPassword']
-
+        profileimg = request.FILES.get('image')  # Access image from request.FILES
         if password == confirmpassword:
             if User.objects.filter(username=username).exists():
-                messages.info(request,'Username already taken')
+                messages.info(request, 'Username already taken')
                 return redirect('signup')
             else:
-                check=0
+                check = 0
                 if len(password) < 8:
-                    check=1
+                    check = 1
                 # Check if password contains at least one digit
                 elif not re.search(r'\d', password):
-                    check=1
+                    check = 1
                 # Check if password contains at least one special character
                 elif not re.search(r'[!@#$%^&*()-_+=]', password):
-                    check=1
-                if check==1:
-                    messages.info(request,'Password is not strong enough ')
+                    check = 1
+                if check == 1:
+                    messages.info(request, 'Password is not strong enough ')
                     return redirect('signup')
                 else:
-                    user = User.objects.create_user(username=username,password=password)
-                    user.save( )
-                    user_model = User.objects.get(username = username)#profile belongs to which user
-                    new_profile = Profile.objects.create(user=user_model,id_user=user_model.id)
-                    new_profile.save()
-                    messages.info(request,'Signup Complete')
+                    user = User.objects.create_user(username=username, password=password)
+                    user.save()
+                    new_profile = Profile.objects.create(user=user, id_user=user.id, profileimg=profileimg)
+                    messages.info(request, 'Signup Complete')
                     return redirect('signin')
-                
 
         else:
-            messages.info(request,'Passwords not matching')
+            messages.info(request, 'Passwords not matching')
             return redirect('signup')
-    else: 
-        return render(request,'signup.html')
+    else:
+        return render(request, 'signup.html')
+
 
 def signin(request):
     if request.method == 'POST':
         username = request.POST['username']
         password = request.POST['password']
-
+        
         user = auth.authenticate(username = username,password = password)
 
         if user is not None:
@@ -349,7 +357,7 @@ info = {
   sphere color :
 }
 '''
-def drawGraph(info):
+def drawGraph(info,username):
   xvi=0
   tempInt=0
   for i, vertex in enumerate(info['CoOrdinatesOfVertices']):
@@ -382,23 +390,20 @@ def drawGraph(info):
     tempInt=tempInt+1
     '''
   plt.axis('off')
-  filename = f"graph_{xv}.png"
-  
+  # Retrieve the username (assuming you have a logged-in user)
+        
+        # Generate the current date
+  current_date = datetime.datetime.now().strftime("%Y-%m-%d")
+        
+        # Construct a unique filename
+  filename = f"{username}_{current_date}"
   addXV()
   plt.savefig(filename)
   print(f"Saved graph as {filename}")
   plt.show()
   return filename
 
-'''{'CoOrdinatesOfVertices': [(93, 53), (193, 82), (7, 60), (182, 16), (0, 0), (83, 28)],
- 'verticeNames': ['A', 'B', 'C', 'D', 'E', 'F'],
- 'edges': [{0, 1}, {0, 2}, {0, 3}, {0, 5}, {1, 3}, {2, 4}, {3, 5}, {4, 5}],
- 'edgeColor': {'(0,1)': 'blue', '(0,2)': 'blue', '(0,3)': 'blue', '(0,5)': 'blue',
- '(1,3)': 'blue', '(2,4)': 'blue', '(3,5)': 'blue', '(4,5)': 'blue'},
- 'sphereColor': {'(0,1)': 'blue', '(0,2)': 'blue', '(0,3)': 'blue', '(0,5)': 'blue', '(1,3)': 'blue', '(2,4)': 'blue', '(3,5)': 'blue', '(4,5)': 'blue'},
- 'textOnEdge': ['temp', 'temp', 'temp', 'temp', 'temp', 'temp', 'temp', 'temp'],
- 'toShowEdgeOrNot': ['1', '1', '1', '1', '1', '1', '1', '1']}'''
-def kruskal(matrix):
+def kruskal(matrix,username):
     graphs=[]
     list_of_all_nodes_we_can_visit_from_this_node = []
     for i in range(len(matrix)):
@@ -438,7 +443,7 @@ def kruskal(matrix):
         if isCycle == 0:
             info['edgeColor'][key] = 'green'
             allVisited = allVisited + 1
-        graphs.append(drawGraph(info))
+        graphs.append(drawGraph(info,username))
     print(disOfEdges)
     return graphs
   #drawGraph(info)
@@ -462,8 +467,13 @@ def process_data(request):
             adj_matrix = generate_adjacency_matrix(text_input)
             print(adj_matrix)
             print("Text Input:", text_input)
-            graphs = kruskal(adj_matrix)
-            return render(request, 'graphs.html', {'generated_graphs': graphs[2]})
+            username = request.user.username
+            profile = Profile.objects.get(user=request.user)
+            requestno = profile.num()
+            return HttpResponse(f'Text input: {username}, Selected button: {requestno}')
+            graphs = kruskal(adj_matrix,username)
+            Profile.incnum()
+            
         
         if file_input:
             print("File Input:", file_input.name)
