@@ -3,96 +3,83 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Web Development Timeline</title>
-    <!-- Bootstrap CSS -->
-    <link
-      rel="stylesheet"
-      href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
-    />
-    <!-- Custom CSS -->
+    <title>Form with Buttons</title>
     <style>
-      .timeline {
-        position: relative;
-        max-width: 1200px;
-        margin: 0 auto;
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f4f4f4;
       }
-      .timeline-item {
+
+      .container {
+        width: 50%;
+        margin: 50px auto;
+        background-color: #fff;
         padding: 20px;
-        margin-bottom: 20px;
-        background: #f0f0f0;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      }
+
+      h2 {
+        text-align: center;
+        color: #333;
+      }
+
+      form {
+        margin-top: 20px;
+      }
+
+      textarea,
+      input[type="file"] {
+        width: calc(100% - 20px); /* Adjust width for padding */
+        padding: 10px;
+        margin-bottom: 10px;
+        border: 1px solid #ccc;
         border-radius: 5px;
+        box-sizing: border-box;
+        display: block; /* Make the input a block element */
+        resize: vertical; /* Allow vertical resizing */
+        min-height: 100px; /* Set minimum height */
       }
-      .timeline-item h3 {
-        margin-top: 0;
+
+      .button-container {
+        display: flex;
+        justify-content: space-between;
       }
-      .timeline-item p {
-        margin-bottom: 0;
+
+      button {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+      }
+
+      button:hover {
+        background-color: #ddd;
       }
     </style>
   </head>
   <body>
     <div class="container">
-      <div class="row">
-        <div class="col-md-12">
-          <h1 class="text-center">Web Development Timeline</h1>
-          <div class="timeline">
-            <div class="timeline-item">
-              <h3>1991: The Birth of the Web</h3>
-              <p>
-                Tim Berners-Lee invents the World Wide Web while working at
-                CERN.
-              </p>
-            </div>
-            <div class="timeline-item">
-              <h3>1995: The Rise of Dynamic Websites</h3>
-              <p>
-                JavaScript is introduced, enabling dynamic client-side
-                functionality.
-              </p>
-            </div>
-            <div class="timeline-item">
-              <h3>1999: CSS Revolution</h3>
-              <p>
-                Cascading Style Sheets (CSS) gain widespread adoption,
-                separating style from content.
-              </p>
-            </div>
-            <div class="timeline-item">
-              <h3>2004: The Emergence of Web 2.0</h3>
-              <p>
-                Websites become more interactive and user-focused with the rise
-                of social media and AJAX.
-              </p>
-            </div>
-            <div class="timeline-item">
-              <h3>2010: The Mobile Era</h3>
-              <p>
-                Responsive web design becomes essential as mobile usage
-                skyrockets.
-              </p>
-            </div>
-            <div class="timeline-item">
-              <h3>2015: Rise of Frontend Frameworks</h3>
-              <p>
-                Frameworks like AngularJS, React, and Vue.js simplify frontend
-                development.
-              </p>
-            </div>
-            <div class="timeline-item">
-              <h3>2020: Full Stack Development</h3>
-              <p>
-                Developers increasingly focus on mastering both frontend and
-                backend technologies.
-              </p>
-            </div>
-          </div>
+      <h2>Form with Buttons</h2>
+      <form
+        action="{% url 'process_data' %}"
+        method="post"
+        enctype="multipart/form-data"
+      >
+        {% csrf_token %}
+        <textarea name="text_input" placeholder="Enter text..."></textarea>
+        <input type="file" name="file_input" />
+        <div class="button-container">return render(request, 'graphs.html', {'generated_graphs': graphs[2]})
+          <button type="submit" name="button" value="Button 1">Button 1</button>
+          <button type="submit" name="button" value="Button 2">Button 2</button>
+          <button type="submit" name="button" value="Button 3">Button 3</button>
+          <button type="submit" name="button" value="Button 4">Button 4</button>
+          <button type="submit" name="button" value="Button 5">Button 5</button>
         </div>
-      </div>
+      </form>
     </div>
-
-    <!-- Bootstrap JS and jQuery -->
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
   </body>
 </html>
