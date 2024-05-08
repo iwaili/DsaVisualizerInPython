@@ -14,13 +14,24 @@ from django.contrib.auth.models import User, auth
 from django.contrib.auth.decorators import login_required
 from .models import Profile
 from .models import SavedGraph
+from .models import userData
 
 @login_required(login_url='signin')
 def rulesForMatrix(request):
    return render(request,'rulesForMatrix.html')
 
+@login_required(login_url='signin')
+def data(request):
+    user_data = userData.objects.filter(name=request.user.username)
+    return render(request, 'data.html', {'user_data': user_data})
+
 def index(request):
-    return render(request,'index.html')
+    if request.user.is_authenticated:
+        user_profile = Profile.objects.get(user=request.user)
+        return render(request, 'index.html', {'user_profile': user_profile})
+    else:
+        return render(request, 'index.html')
+
 def signup(request):
     if request.method == 'POST':
         username = request.POST['username']
@@ -310,7 +321,7 @@ def makeInitialInfo(adjacency_matrix):
     tempSphereInfo1 = f'({j[0]},{j[1]})'
     tempSphereColor[tempSphereInfo1] = 'black'
   tempRedList = ["red"] * noOfEdges
-  tempTextOnEdge = ["temp"] * noOfEdges
+  tempTextOnEdge = [""] * noOfEdges
   TempToShowEdgeOrNot = ['1'] * noOfEdges
   info = {
       "CoOrdinatesOfVertices" : coord ,
@@ -457,57 +468,97 @@ def draw_bfs_step(info, visited, parent, curr_node, username, requestno,ab):
  'toShowEdgeOrNot': ['1', '1', '1', '1', '1', '1', '1', '1']}'''
 
 def kruskal(matrix,username,requestno):
-    ab=0
-    graphs=[]
-    list_of_all_nodes_we_can_visit_from_this_node = []
-    for i in range(len(matrix)):
-        list_of_all_nodes_we_can_visit_from_this_node.append([])
+  ab=0
+  graphs=[]
+  list_of_all_nodes_we_can_visit_from_this_node=[]
+  for i in range(len(matrix)):
+    list_of_all_nodes_we_can_visit_from_this_node.append([])
+  print(list_of_all_nodes_we_can_visit_from_this_node)
+  info = makeInitialInfo(matrix)
+  disOfEdges = {}
+  a=0
+  for edge1 in info['edges']:
+    edge = list(edge1)
+    x_values = [info['CoOrdinatesOfVertices'][edge[0]][0], info['CoOrdinatesOfVertices'][edge[1]][0]]
+    y_values = [info['CoOrdinatesOfVertices'][edge[0]][1], info['CoOrdinatesOfVertices'][edge[1]][1]]
+    distance = int(np.sqrt((x_values[1] - x_values[0])**2 + (y_values[1] - y_values[0])**2))
+    tempEdgeInfo = f'({edge[0]},{edge[1]})'
+    disOfEdges[tempEdgeInfo]=distance
+    info['textOnEdge'][a] = distance
+    a+=1
+  tempDisOfEdges=disOfEdges
+  disOfEdges = dict(sorted(tempDisOfEdges.items(), key=lambda item: item[1]))
+  allVisited=0
+  for key,value in disOfEdges.items():
+    print(allVisited)
+    if allVisited==len(info['verticeNames'])-1:
+      print('tree is complete')
+      break
     print(list_of_all_nodes_we_can_visit_from_this_node)
-    info = makeInitialInfo(matrix)
-    print(info)
-    disOfEdges = {}
-    tempInt=-1
-    for edge1 in info['edges']:
-        tempInt+=1
-        edge = list(edge1)
-        x_values = [info['CoOrdinatesOfVertices'][edge[0]][0], info['CoOrdinatesOfVertices'][edge[1]][0]]
-        y_values = [info['CoOrdinatesOfVertices'][edge[0]][1], info['CoOrdinatesOfVertices'][edge[1]][1]]
-        distance_squared = (x_values[1] - x_values[0])**2 + (y_values[1] - y_values[0])**2
-        if distance_squared >= 0:
-            distance = int(np.sqrt(distance_squared))
-            tempEdgeInfo = f'({edge[0]},{edge[1]})'
-            disOfEdges[tempEdgeInfo] = distance
-            info['textOnEdge'][tempInt] = str(distance)
-        else:
-            print(f"Skipping edge {edge}: distance calculation resulted in a negative value.")
-    print("--------",info)
-    tempDisOfEdges = disOfEdges
-    disOfEdges = dict(sorted(tempDisOfEdges.items(), key=lambda item: item[1]))
-    allVisited = 0
-    for key, value in disOfEdges.items():
-        print(allVisited)
-        if allVisited == len(info['verticeNames']) - 1:
-            graphs.append(drawGraph(info,username,requestno,ab))
-            print('tree is complete')
-            break
-        print(list_of_all_nodes_we_can_visit_from_this_node)
-        isCycle = 0
-        list_of_all_nodes_we_can_visit_from_this_node[int(key[1])].append(int(key[3]))
-        list_of_all_nodes_we_can_visit_from_this_node[int(key[3])].append(int(key[1]))
-        tempInt = 0
-        for tempList in list_of_all_nodes_we_can_visit_from_this_node:
-            if tempInt in tempList:
-                print('Cycle is present')
-                break
-        print(disOfEdges)
-        if isCycle == 0:
-            info['edgeColor'][key] = 'blue'
-            allVisited = allVisited + 1
-        graphs.append(drawGraph(info,username,requestno,ab))
-        ab+=1
+    isCycle=0
+    list_of_all_nodes_we_can_visit_from_this_node[int(key[1])].append(int(key[3]))
+    list_of_all_nodes_we_can_visit_from_this_node[int(key[3])].append(int(key[1]))
+    tempInt=0
+    for tempList in list_of_all_nodes_we_can_visit_from_this_node:
+      if tempInt in tempList:
+        print('Cycle is present')
+        isCycle=1
+        break
     print(disOfEdges)
-    print(graphs)
-    return graphs
+    if isCycle==0:
+      info['edgeColor'][key] = 'blue'
+      allVisited=allVisited+1
+    graphs.append(drawGraph(info,username,requestno,ab))
+    ab+=1
+  print(graphs)
+  return graphs
+
+def Cycle(matrix,username,requestno):
+  ab=0
+  graphs=[]
+  list_of_all_nodes_we_can_visit_from_this_node=[]
+  for i in range(len(matrix)):
+    list_of_all_nodes_we_can_visit_from_this_node.append([])
+  print(list_of_all_nodes_we_can_visit_from_this_node)
+  info = makeInitialInfo(matrix)
+  disOfEdges = {}
+  a=0
+  for edge1 in info['edges']:
+    edge = list(edge1)
+    x_values = [info['CoOrdinatesOfVertices'][edge[0]][0], info['CoOrdinatesOfVertices'][edge[1]][0]]
+    y_values = [info['CoOrdinatesOfVertices'][edge[0]][1], info['CoOrdinatesOfVertices'][edge[1]][1]]
+    distance = int(np.sqrt((x_values[1] - x_values[0])**2 + (y_values[1] - y_values[0])**2))
+    tempEdgeInfo = f'({edge[0]},{edge[1]})'
+    disOfEdges[tempEdgeInfo]=distance
+    info['textOnEdge'][a] = distance
+    a+=1
+  tempDisOfEdges=disOfEdges
+  disOfEdges = dict(sorted(tempDisOfEdges.items(), key=lambda item: item[1]))
+  allVisited=0
+  for key,value in disOfEdges.items():
+    print(allVisited)
+    if allVisited==len(info['verticeNames'])-1:
+      print('tree is complete')
+      break
+    print(list_of_all_nodes_we_can_visit_from_this_node)
+    isCycle=0
+    list_of_all_nodes_we_can_visit_from_this_node[int(key[1])].append(int(key[3]))
+    list_of_all_nodes_we_can_visit_from_this_node[int(key[3])].append(int(key[1]))
+    tempInt=0
+    for tempList in list_of_all_nodes_we_can_visit_from_this_node:
+      if tempInt in tempList:
+        print('Cycle is present')
+        isCycle=1
+        return graphs
+        break
+    print(disOfEdges)
+    if isCycle==0:
+      info['edgeColor'][key] = 'blue'
+      allVisited=allVisited+1
+    graphs.append(drawGraph(info,username,requestno,ab))
+    ab+=1
+  print(graphs)
+  return graphs
 import os
 import matplotlib.pyplot as plt
 import numpy as np
@@ -534,15 +585,12 @@ def dijkstra(adj_matrix, start,username,requestno):
         if vertex in visited:
             continue
         visited.add(vertex)
-
         plt.figure(figsize=(10, 6))
         G = nx.from_numpy_array(adj_matrix)
         pos = nx.spring_layout(G, seed=42)
         nx.draw(G, pos, with_labels=True, node_color='skyblue', node_size=1500, font_size=10)
 
         nx.draw_networkx_nodes(G, pos, nodelist=[vertex], node_color='red', node_size=1500)
-
-        # Annotate current step and distances
         plt.text(0.5, 1.05, f"Step {step}: Exploring vertex {vertex}", horizontalalignment='center', fontsize=14, transform=plt.gca().transAxes)
         plt.text(0.5, 1.00, "Shortest distances:", horizontalalignment='center', fontsize=12, transform=plt.gca().transAxes)
         for v, d in distances.items():
@@ -580,10 +628,119 @@ def dijkstra(adj_matrix, start,username,requestno):
 
     return graphs
 
-# Example adjacency matrix (replace with your own)
+import os
+import networkx as nx
+import numpy as np
+import matplotlib.pyplot as plt
+from heapq import heappop, heappush
 
+def prim(adj_matrix, start, username, requestno):
+    graphs = []
+    nomo=0
+    ab = 0
+    num_vertices = len(adj_matrix)
+    mst = set()  # Set to store the edges of the Minimum Spanning Tree
+    visited = set()  # Set to keep track of visited vertices
+    pq = [(0, start)]  # Priority queue to store the vertices to be explored
 
+    while pq and len(visited)<=len(adj_matrix):
+        _, vertex = heappop(pq)
+        if vertex in visited:
+            break
+        visited.add(vertex)
+        
+        plt.figure(figsize=(10, 6))
+        G = nx.from_numpy_array(adj_matrix)
+        pos = nx.spring_layout(G, seed=42)
+        nx.draw(G, pos, with_labels=True, node_color='skyblue', node_size=1500, font_size=10)
+        
+        # Draw Minimum Spanning Tree edges
+        for u, v in mst:
+            nx.draw_networkx_edges(G, pos, edgelist=[(u, v)], width=2, edge_color='green')
+        
+        nx.draw_networkx_nodes(G, pos, nodelist=[vertex], node_color='red', node_size=1500)
 
+        # Annotate current step
+        plt.text(0.5, 1.05, f"Step {ab}: Adding vertex {vertex} to MST", horizontalalignment='center', fontsize=14, transform=plt.gca().transAxes)
+
+        # Define filename and filepath
+        filename = f"{username}_{requestno}_{ab}.png"
+        ab += 1
+        filepath = os.path.join(settings.MEDIA_ROOT, 'graphs', filename)
+
+        # Turn off axis
+        plt.axis('off')
+
+        # Save the figure
+        plt.savefig(filepath)
+        plt.clf()
+
+        # Update Minimum Spanning Tree
+        for neighbor, weight in enumerate(adj_matrix[vertex]):
+            if neighbor not in visited and weight > 0:
+                heappush(pq, (weight, neighbor))
+                mst.add((vertex, neighbor))
+                mst.add((neighbor, vertex))
+        nomo = len(mst)/2
+    return graphs
+
+def graph_coloring(adj_matrix, start, username, requestno):
+    graphs = []
+    ab = 0
+    num_vertices = len(adj_matrix)
+    visited = set()
+    colors = {}
+
+    pq = [(0, start)]
+    step = 0  # Step counter
+
+    while pq:
+        _, vertex = heappop(pq)
+        if vertex in visited:
+            continue
+        visited.add(vertex)
+  
+        plt.figure(facecolor='black', figsize=(10, 6))
+        G = nx.from_numpy_array(adj_matrix)
+        pos = nx.spring_layout(G, seed=42)
+        nx.draw(G, pos, with_labels=True, node_color='skyblue', node_size=1500, font_size=10)
+
+        # Highlight the current vertex
+        nx.draw_networkx_nodes(G, pos, nodelist=[vertex], node_color='red', node_size=1500)
+
+        # Annotate current step and colors
+        plt.text(0.5, 1.05, f"Step {step}: Coloring vertex {vertex}", horizontalalignment='center', fontsize=14, transform=plt.gca().transAxes)
+        plt.text(0.5, 1.00, "Colors:", horizontalalignment='center', fontsize=12, transform=plt.gca().transAxes)
+        for v, c in colors.items():
+            plt.text(pos[v][0], pos[v][1] + 0.05, f"({c})", horizontalalignment='center', fontsize=10)
+
+        # Define filename and filepath
+        filename = f"{username}_{requestno}_{ab}.png"
+        ab += 1
+        filepath = os.path.join(settings.MEDIA_ROOT, 'graphs', filename)
+
+        # Turn off axis
+        plt.axis('off')
+        # Save the figure
+        plt.savefig(filepath)
+        # Update colors of all vertices
+        available_colors = set(range(num_vertices))
+        for v in range(num_vertices):
+            if v not in colors:
+                for neighbor, _ in enumerate(adj_matrix[v]):
+                    if neighbor in colors:
+                        available_colors.discard(colors[neighbor])
+
+                if available_colors:
+                    colors[v] = min(available_colors)
+                else:
+                    colors[v] = max(colors.values()) + 1
+
+        step += 1
+
+    return graphs
+
+from datetime import date
 
 def generate_adjacency_matrix(matrix):
     # Split the text input by lines and then split each line by whitespace to get the individual elements
@@ -608,8 +765,36 @@ def process_data(request):
           print("Text Input:", text_input)
           username = request.user.username
           profile = Profile.objects.get(user=request.user)
-          profile.incnum()
+          #profile.incnum()
           requestno = profile.num()
+          
+          tempWhich =""
+          if selected_button=="Button 1":
+             tempWhich = 'BFS'
+          elif selected_button=="Button 2":
+             tempWhich = 'kruskal'
+          elif selected_button=="Button 3":
+             tempWhich = 'dijkstra'
+          elif selected_button=="Button 4":
+             tempWhich = 'graph_coloring'
+          elif selected_button=="Button 5":
+             tempWhich = 'prim'
+          elif selected_button=="Button 6":
+             tempWhich = 'Cycle'
+          elif selected_button=="Button 7":
+             tempWhich = 'No of Forests'
+          elif selected_button=="Button 8":
+             tempWhich = 'kruskal'
+          else :
+             tempWhich = "dunno what you presssed mate"
+          profile.incnum()
+          profile.save()
+          user_data = userData.objects.create(
+                name = username,
+                input = text_input,
+                which = tempWhich,
+                date = date.today(),
+            )
           print("Selected Button:", selected_button)
           if selected_button=="Button 1":
              graphs = BFS(adj_matrix,0,username,requestno)
@@ -617,9 +802,19 @@ def process_data(request):
              graphs = kruskal(adj_matrix,username,requestno)
           elif selected_button=="Button 3":
              graphs = dijkstra(adj_matrix,0,username,requestno)
+          elif selected_button=="Button 4":
+             graphs = graph_coloring(adj_matrix,0,username,requestno)
+          elif selected_button=="Button 5":
+             graphs = prim(adj_matrix,0,username,requestno)
+          elif selected_button=="Button 6":
+             graphs = Cycle(adj_matrix,0,username,requestno)
+          elif selected_button=="Button 7":
+             graphs = dijkstra(adj_matrix,0,username,requestno)
+          elif selected_button=="Button 8":
+             graphs = kruskal(adj_matrix,0,username,requestno)
+          else :
+             graphs = BFS(adj_matrix,0,username,requestno)
           print(graphs)
-          profile.incnum()
-          profile.save()
           return redirect('show', username=username, requestno=requestno)
         
         if file_input:
