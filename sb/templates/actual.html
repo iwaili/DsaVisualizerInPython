@@ -94,15 +94,7 @@
   </head>
   <body>
     <div class="container">
-      <div>
-        <button class="btn btn-primary" onclick="redirectToPage()">Home</button>
-
-        <script>
-          function redirectToPage() {
-            href = "{% url 'index' %}";
-          }
-        </script>
-      </div>
+      <a href="{% url 'index' %}" class="rules-link">Home</a>
       <h2>Please Enter Adjacency Matrix</h2>
       <form
         action="{% url 'process_data' %}"
@@ -182,22 +174,14 @@
       </div>
       </form>
       <div class="rules-button-container">
-        <button
-          class="btn btn-primary"
-          style="background-color: #ff0000; color: #fff"
-          onclick="redirectToPage()"
-        >
-          Some Rules to Write the Adjacency Matrix
-        </button>
-
-        <script>
-          function redirectToPage() {
-            window.location.href = "{% url 'rulesForMatrix' %}";
-          }
-        </script>
+        <a href="{% url 'rulesForMatrix' %}" class="rules-link">Some Rules to Write the Adjacency Matrix</a>
+       
 {%for message in messages%}
 <h3>{{message}}</h3>
 {%endfor%}
+{% if selected_button %}
+    <p>The selected button is: {{ selected_button }}</p>
+{% endif %}
 </div>
 </div>
 </body>

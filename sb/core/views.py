@@ -362,7 +362,7 @@ def drawGraph(info, username, requestno, ab):
     plt.figure(facecolor='black')  # Set background color to black
     for i, vertex in enumerate(info['CoOrdinatesOfVertices']):
         plt.scatter(vertex[0], vertex[1], s=100, color='yellow')
-        plt.text(vertex[0], vertex[1], info['verticeNames'][tempInt], fontsize=14, color='black', ha='center', va='bottom')
+        plt.text(vertex[0], vertex[1]+2, info['verticeNames'][tempInt], fontsize=14, color='red', ha='center', va='bottom')
         tempInt += 1
 
     tempInt = -1
@@ -403,7 +403,49 @@ def drawGraph(info, username, requestno, ab):
         image=f'graphs/{filename}'
     )
     return filename
+def BFS(bfs_adjacency_matrix, start_node, username, requestno):
+    ab=0
+    graphs=[]
+    n = len(bfs_adjacency_matrix)
+    visited = [False] * n
+    queue = [start_node]
+    visited[start_node] = True
+    parent = [-1] * n  # To store the parent of each node in the BFS tree
 
+    bfs_adjacency_matrix_np = np.array(bfs_adjacency_matrix)  # Convert the list to a NumPy array
+    info = makeInitialInfo(bfs_adjacency_matrix_np)
+
+    while queue:
+        curr_node = queue.pop(0)
+        graphs.append(draw_bfs_step(info, visited, parent, curr_node, username, requestno, ab))
+        ab+=1
+        for neighbor in range(n):
+            if bfs_adjacency_matrix[curr_node][neighbor] != 0 and not visited[neighbor]:
+                visited[neighbor] = True
+                parent[neighbor] = curr_node
+                queue.append(neighbor)
+    return graphs
+
+def draw_bfs_step(info, visited, parent, curr_node, username, requestno,ab):
+    tempInt=-1
+    for edge1 in info['edges']:
+        tempInt+=1
+        info['textOnEdge'][tempInt]=" "
+        edge = list(edge1)
+        u, v = edge
+        if visited[u] and visited[v]:
+            info['edgeColor'][f'({u},{v})'] = 'green'
+        elif ((visited[u] and parent[v] == u) or (visited[v] and parent[u] == v)):
+            info['edgeColor'][f'({u},{v})'] = 'red'
+        else:
+            info['edgeColor'][f'({u},{v})'] = 'blue'
+
+    for i in range(len(visited)):
+        if visited[i]:
+            info['sphereColor'][f'({info["CoOrdinatesOfVertices"][i][0]},{info["CoOrdinatesOfVertices"][i][1]})'] = 'green'
+        else:
+            info['sphereColor'][f'({info["CoOrdinatesOfVertices"][i][0]},{info["CoOrdinatesOfVertices"][i][1]})'] = 'red'
+    return drawGraph(info, username, requestno, ab)
 
 '''{'CoOrdinatesOfVertices': [(93, 53), (193, 82), (7, 60), (182, 16), (0, 0), (83, 28)],
  'verticeNames': ['A', 'B', 'C', 'D', 'E', 'F'],
@@ -445,7 +487,7 @@ def kruskal(matrix,username,requestno):
     for key, value in disOfEdges.items():
         print(allVisited)
         if allVisited == len(info['verticeNames']) - 1:
-            
+            graphs.append(drawGraph(info,username,requestno,ab))
             print('tree is complete')
             break
         print(list_of_all_nodes_we_can_visit_from_this_node)
@@ -466,6 +508,82 @@ def kruskal(matrix,username,requestno):
     print(disOfEdges)
     print(graphs)
     return graphs
+import os
+import matplotlib.pyplot as plt
+import numpy as np
+from queue import PriorityQueue
+
+import numpy as np
+import matplotlib.pyplot as plt
+import networkx as nx
+from heapq import heappop, heappush
+
+def dijkstra(adj_matrix, start,username,requestno):
+    graphs=[]
+    ab=0
+    num_vertices = len(adj_matrix)
+    distances = {v: float('inf') for v in range(num_vertices)}
+    distances[start] = 0
+    visited = set()
+    pq = [(0, start)]
+
+    step = 0  # Step counter
+
+    while pq:
+        distance, vertex = heappop(pq)
+        if vertex in visited:
+            continue
+        visited.add(vertex)
+
+        plt.figure(figsize=(10, 6))
+        G = nx.from_numpy_array(adj_matrix)
+        pos = nx.spring_layout(G, seed=42)
+        nx.draw(G, pos, with_labels=True, node_color='skyblue', node_size=1500, font_size=10)
+
+        nx.draw_networkx_nodes(G, pos, nodelist=[vertex], node_color='red', node_size=1500)
+
+        # Annotate current step and distances
+        plt.text(0.5, 1.05, f"Step {step}: Exploring vertex {vertex}", horizontalalignment='center', fontsize=14, transform=plt.gca().transAxes)
+        plt.text(0.5, 1.00, "Shortest distances:", horizontalalignment='center', fontsize=12, transform=plt.gca().transAxes)
+        for v, d in distances.items():
+            plt.text(pos[v][0], pos[v][1] + 0.05, f"({d})", horizontalalignment='center', fontsize=10)
+        filename = f"{username}_{requestno}_{ab}.png"
+        ab+=1
+        # Define the file path where the image will be saved
+        filepath = os.path.join(settings.MEDIA_ROOT, 'graphs', filename)
+
+        # Turn off axis
+        plt.axis('off')
+
+        # Save the figure
+        plt.savefig(filepath)
+
+        # Clear the current figure
+        plt.clf()  # Clear the current figure to release memory
+
+        # Create an instance of the SavedGraph model and save it to the database
+        saved_graph = SavedGraph.objects.create(
+            username=username,
+            requestno=requestno,
+            ab=ab,
+            image=f'graphs/{filename}'
+        )
+        graphs.append(filename)
+        plt.close()
+
+        for neighbor, weight in enumerate(adj_matrix[vertex]):
+            if weight > 0 and distances[vertex] + weight < distances[neighbor]:
+                distances[neighbor] = distances[vertex] + weight
+                heappush(pq, (distances[neighbor], neighbor))
+
+        step += 1
+
+    return graphs
+
+# Example adjacency matrix (replace with your own)
+
+
+
 
 def generate_adjacency_matrix(matrix):
     # Split the text input by lines and then split each line by whitespace to get the individual elements
@@ -481,8 +599,8 @@ def process_data(request):
         if not text_input:
           messages.info(request, '')
           return redirect('actual')
-        selected_button = request.POST.get('button')
         
+        selected_button = request.POST.get('button')
         # Process the text and file data as needed
         if text_input:
           adj_matrix = generate_adjacency_matrix(text_input)
@@ -492,7 +610,13 @@ def process_data(request):
           profile = Profile.objects.get(user=request.user)
           profile.incnum()
           requestno = profile.num()
-          graphs = kruskal(adj_matrix,username,requestno)
+          print("Selected Button:", selected_button)
+          if selected_button=="Button 1":
+             graphs = BFS(adj_matrix,0,username,requestno)
+          elif selected_button=="Button 2":
+             graphs = kruskal(adj_matrix,username,requestno)
+          elif selected_button=="Button 3":
+             graphs = dijkstra(adj_matrix,0,username,requestno)
           print(graphs)
           profile.incnum()
           profile.save()

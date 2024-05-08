@@ -13,11 +13,18 @@
         display: flex;
         justify-content: center;
         align-items: center;
+        background-color: #f4f4f4;
       }
 
       /* Style for the centered div */
       .centered-div {
         text-align: center;
+        padding: 20px;
+        background-color: #fff;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        max-width: 400px;
+        width: 90%;
       }
 
       /* Style for the button */
@@ -36,12 +43,41 @@
       .redirect-button:hover {
         background-color: #0056b3;
       }
+
+      /* Style for the bullet points */
+      .rules-list {
+        text-align: left;
+        margin-top: 20px;
+      }
+
+      .rules-list li {
+        margin-bottom: 10px;
+      }
+
+      @media (max-width: 500px) {
+        .centered-div {
+          max-width: 90%;
+        }
+      }
     </style>
   </head>
   <body>
     <div class="centered-div">
       <h1>Welcome to Our Project</h1>
-      <p>Some introductory text about your project goes here...</p>
+      <p>Below are some rules for writing an adjacency matrix:</p>
+      <ul class="rules-list">
+        <li>
+          Make sure there are n square number of elements, these are rules of
+          writing an adjacency matrix.
+        </li>
+        <li>All the diagonal elements must be zero.</li>
+        <li>All the elements must be positive.</li>
+        <li>
+          Make sure that you don't have an extra newline at the end of your
+          input.
+        </li>
+        <li>Extra spaces are allowed.</li>
+      </ul>
       <button class="redirect-button" onclick="redirectToPage()">
         Go back
       </button>
