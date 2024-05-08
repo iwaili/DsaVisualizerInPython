@@ -80,7 +80,7 @@ def signin(request):
 
         if user is not None:
             auth.login(request,user)
-            return render(request,'index.html')
+            return redirect('index')
         else:
             messages.info(request,'Credentials are Incorrect')
             return redirect('signin')
@@ -684,63 +684,63 @@ def prim(adj_matrix, start, username, requestno):
         nomo = len(mst)/2
     return graphs
 
-def graph_coloring(adj_matrix, start, username, requestno):
+
+from datetime import date
+import networkx as nx
+import matplotlib.pyplot as plt
+
+import networkx as nx
+import matplotlib.pyplot as plt
+import os
+
+def graph_coloring(adjacency_matrix, username, requestno):
     graphs = []
     ab = 0
-    num_vertices = len(adj_matrix)
-    visited = set()
-    colors = {}
+    # Create a graph
+    G = nx.Graph()
 
-    pq = [(0, start)]
-    step = 0  # Step counter
+    # Add edges based on the adjacency matrix
+    for i in range(len(adjacency_matrix)):
+        for j in range(len(adjacency_matrix[i])):
+            if adjacency_matrix[i][j] == 1:
+                G.add_edge(str(i), str(j))
 
-    while pq:
-        _, vertex = heappop(pq)
-        if vertex in visited:
-            continue
-        visited.add(vertex)
-  
-        plt.figure(facecolor='black', figsize=(10, 6))
-        G = nx.from_numpy_array(adj_matrix)
-        pos = nx.spring_layout(G, seed=42)
-        nx.draw(G, pos, with_labels=True, node_color='skyblue', node_size=1500, font_size=10)
+    # Perform graph coloring
+    color_map = {}
+    available_colors = set(range(1, len(G.nodes()) + 1))  # Initialize available colors
+    for node in G.nodes():
+        # Clear the current plot
+        plt.clf()
 
-        # Highlight the current vertex
-        nx.draw_networkx_nodes(G, pos, nodelist=[vertex], node_color='red', node_size=1500)
+        # Draw the graph
+        pos = nx.spring_layout(G)  # positions for all nodes
+        nx.draw(G, pos, with_labels=True, node_color=[color_map.get(node, 0) for node in G.nodes()], node_size=1500, cmap=plt.cm.rainbow)
 
-        # Annotate current step and colors
-        plt.text(0.5, 1.05, f"Step {step}: Coloring vertex {vertex}", horizontalalignment='center', fontsize=14, transform=plt.gca().transAxes)
-        plt.text(0.5, 1.00, "Colors:", horizontalalignment='center', fontsize=12, transform=plt.gca().transAxes)
-        for v, c in colors.items():
-            plt.text(pos[v][0], pos[v][1] + 0.05, f"({c})", horizontalalignment='center', fontsize=10)
-
-        # Define filename and filepath
+        # Generate the filename and save the graph
         filename = f"{username}_{requestno}_{ab}.png"
         ab += 1
         filepath = os.path.join(settings.MEDIA_ROOT, 'graphs', filename)
 
         # Turn off axis
         plt.axis('off')
+
         # Save the figure
         plt.savefig(filepath)
-        # Update colors of all vertices
-        available_colors = set(range(num_vertices))
-        for v in range(num_vertices):
-            if v not in colors:
-                for neighbor, _ in enumerate(adj_matrix[v]):
-                    if neighbor in colors:
-                        available_colors.discard(colors[neighbor])
 
-                if available_colors:
-                    colors[v] = min(available_colors)
-                else:
-                    colors[v] = max(colors.values()) + 1
+        # Append the filename to the list of graphs
+        graphs.append(filename)
 
-        step += 1
+        # Get colors of adjacent nodes
+        adjacent_colors = set(color_map.get(neighbor, None) for neighbor in G.neighbors(node))
+        # Find the first available color
+        for color in available_colors:
+            if color not in adjacent_colors:
+                color_map[node] = color
+                break
 
     return graphs
 
-from datetime import date
+
 
 def generate_adjacency_matrix(matrix):
     # Split the text input by lines and then split each line by whitespace to get the individual elements
@@ -803,7 +803,7 @@ def process_data(request):
           elif selected_button=="Button 3":
              graphs = dijkstra(adj_matrix,0,username,requestno)
           elif selected_button=="Button 4":
-             graphs = graph_coloring(adj_matrix,0,username,requestno)
+             graphs = graph_coloring(adj_matrix,username,requestno)
           elif selected_button=="Button 5":
              graphs = prim(adj_matrix,0,username,requestno)
           elif selected_button=="Button 6":
