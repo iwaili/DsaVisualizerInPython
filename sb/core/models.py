@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth import get_user_model
-
+from datetime import date
 User = get_user_model()
 class Profile(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -24,10 +24,13 @@ class Profile(models.Model):
 
 
 class userData(models.Model):
-    name = models.CharField(max_length=200)
-    input = models.TextField
-    which = models.TextField
-    date = models.DateField
+    name = models.CharField(max_length=200,default="harshit")
+    input = models.TextField(default="error")  # Renaming 'input' field to 'input_data'
+    which = models.CharField(max_length=100,default="dunno")  # Assuming 'which' is a string field
+    date = models.DateField(default='2003-05-21')
+
+    def __str__(self):
+        return self.name 
 
 class SavedGraph(models.Model):
     username = models.CharField(max_length=100)
